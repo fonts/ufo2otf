@@ -11,7 +11,7 @@ def read(fname):
 
 setup(
     name = "ufo2otf",
-    version = "0.1.0",
+    version = "0.2.0",
     author = "Eric Schrijver",
     author_email = "eric@ericschrijver.nl",
     description = ("Take UFO font sources and generate OTF’s and webfonts"),
@@ -30,3 +30,4 @@ setup(
         "License :: OSI Approved :: BSD License",
     ],
 )
+

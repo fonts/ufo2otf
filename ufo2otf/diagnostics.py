@@ -37,6 +37,8 @@ def diagnostics():
     if diagnostics['ufo2fdk'] and diagnostics['fdk']:
         diagnostics['afdko'] = True
     
+    diagnostics['mkeot'] = subprocess.Popen(['which','mkeot'], stdout=subprocess.PIPE).communicate()[0].strip()
+    
     return diagnostics
 
 class FontError(Exception):
@@ -111,6 +113,25 @@ class FontError(Exception):
             http://code.typesupply.com/wiki/ufo2fdk for further
             information."""
     
+    def mkeot_error(self):
+        if diagnostics['mkeot']:
+            return """\
+            The eot-utils and the mkeot command appear to be installed.
+            It is likely we can produce eot font files."""
+        else:
+            return """\
+            The eot-utils (and thus the mkeot command) do not appear to
+            be installed. We can not generate eot files.
+
+            ubuntu, debian:
+            sudo apt-get install eot-utils
+
+            os x:
+            brew install eot-utils
+            """
+
+
+
     def error_message(self):
         if not self.compiler:
             return [self.fontforge_error(), self.afdko_error()]
@@ -128,7 +149,7 @@ class FontError(Exception):
                 if self.diagnostics['fontforge']:
                     err.append('FontForge appears to be working, though.')
                 else:
-                    err.extend(['You might also want to try out FontForge. It’s free and open source.',self.fontorge_error()])
+                    err.extend(['You might also want to try out FontForge. It’s free and open source.',self.fontforge_error()])
             return err
 
     def __str__(self):
@@ -138,3 +159,4 @@ if __name__ == "__main__":
     # This will print diagnostics to stdout
     e = FontError()
     print e
+

@@ -1,0 +1,5 @@
+include *.txt
+include *.rst
+recursive-include examples *.txt *.py
+prune examples/sample?/build
+

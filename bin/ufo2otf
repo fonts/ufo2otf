@@ -5,31 +5,50 @@
 Ufo2otf is a command line utility that takes UFO font sources and generate
 OTF’s and webfonts.
 
-usage: ufo2otf [-h] [--webfonts] [--afdko] infiles [infiles ...]
+usage: ufo2otf [-h] [--webfonts] [--afdko] [--diagnostics]
+               infiles [infiles ...]
 
 positional arguments:
-  infiles     The source UFO files
+  infiles        The source UFO files
 
 optional arguments:
-  -h, --help  show this help message and exit
-  --webfonts  Generate webfonts in a ./webfonts subfolder
-  --afdko     Generate the OTF with Adobe Font Development Kit for Opentype
+  -h, --help     show this help message and exit
+  --webfonts     Generate webfonts in a ./webfonts subfolder
+  --afdko        Generate the OTF with Adobe Font Development Kit for Opentype
+  --diagnostics  Display information about available font compilers (no files
+                 outputted)
+
 """
 
 from ufo2otf import argparse, Compiler
+from ufo2otf import FontError
+
+def diagnostics():
+    e = FontError()
+    print e
 
 def console():
     from sys import exit
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("infiles", help="The source UFO files", nargs='+')
+    parser.add_argument("infiles", help="The source UFO files", nargs='*')
     
     parser.add_argument("--webfonts", help="Generate webfonts in a ./webfonts subfolder",
                     action="store_true")
     parser.add_argument("--afdko", help="Generate the OTF with Adobe Font Development Kit for Opentype",
                     action="store_true")
+    parser.add_argument("--diagnostics", help="Display information about available font compilers (no files outputted)",
+                    action="store_true")
+
     args = parser.parse_args()
     
+    if args.diagnostics:
+        diagnostics()
+        exit()
+
+    if len(args.infiles) < 1:
+        exit("ufo2otf: error: too few arguments")
+
     if args.webfonts and args.afdko:
         exit("Can not generate webfonts through the AFDKO, exiting.")
 
