@@ -11,7 +11,7 @@ def read(fname):
 
 setup(
     name = "ufo2otf",
-    version = "0.2.0",
+    version = "0.2.1",
     author = "Eric Schrijver",
     author_email = "eric@ericschrijver.nl",
     description = ("Take UFO font sources and generate OTF’s and webfonts"),
@@ -20,6 +20,7 @@ setup(
     url = "http://packages.python.org/an_example_pypi_project",
     packages=['ufo2otf'],
     scripts=['bin/ufo2otf'],
+    data_files=[('', ['README.rst'])],
     long_description=read('README.rst'),
     classifiers=[
         "Environment :: Console",
