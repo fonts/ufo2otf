@@ -6,6 +6,7 @@ from os.path import splitext, dirname, sep, join, exists, basename
 from subprocess import Popen
 from diagnostics import diagnostics, known_compilers, FontError
 import codecs
+import re
 
 diagnostics = diagnostics()
 
@@ -58,8 +59,6 @@ class Compiler:
                 if not exists(webfonts_path):
                     mkdir(webfonts_path)
                     
-                print "name:", name
-                print "basename(name):", basename(name)
                 woff_file_name = join(outdir, 'webfonts', basename(name) + '.woff')
                 ttf_file_name = join(outdir, 'webfonts', basename(name) + '.ttf')
                 eot_file_name = join(outdir, 'webfonts', basename(name) + '.eot')
@@ -69,16 +68,56 @@ class Compiler:
                 if eot:
                     eot_file = open(eot_file_name, 'wb')
                     pipe = Popen(['mkeot', ttf_file_name], stdout=eot_file)
+                    pipe.wait()
                 
-                # Generate CSS:
+                # Generating CSS
+                #
+                # CSS can only cover a limited set of styles:
+                # it knows about font weight, and about the difference between
+                # regular and italic.
+                # It also knows font-style: oblique, but most browser will take
+                # the regular variant and slant it.
                 font_style = "normal"
+                # This tends to work quite well, as long as you have one kind of
+                # italic in your font family:
                 if font.italicangle != 0:
                     font_style = "italic"
-                font_weight = font.os2_weight
+                
+                # CSS weights map quite well to Opentype, so including families
+                # with lots of different weights is no problem.
+                #
                 # http://www.microsoft.com/typography/otspec/os2ver0.htm#wtc
                 # ->
                 # http://www.w3.org/TR/CSS21/fonts.html#font-boldness
+                font_weight = font.os2_weight
+                #
+                # Anything else, like condensed, for example, will need to be 
+                # be put into a different font family, because there is no way
+                # to encode it into CSS.
+                #
+                # What we do here, is try to determine whether this is the case.
+                # ie:
+                # >>> font.fullname
+                # 'Nimbus Sans L Bold Condensed Italic'
+                # >>> font.familyname
+                # 'Nimbus Sans L'
+                # >>> font.weight
+                # 'Bold'
+                # >>> re.findall("italic|oblique", f.fullname, re.I)
+                # ['Italic']
+                #
+                # By then removing all these components from the full name,
+                # we find out there is a specific style such as, in this case,
+                # 'Condensed'
                 font_family = font.familyname
+                specifics = re.sub("italic|oblique", '',
+                   font.fullname.
+                   replace(font.familyname, '').
+                   replace(font.weight, ''),
+                flags=re.I).strip()
+                if specifics:
+                    font_family = "%s %s" % (font.familyname, specifics)
+                
                 if eot:
                     self.css += """@font-face {
     font-family: '%s';
